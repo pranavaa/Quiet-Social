@@ -38,22 +38,30 @@ class Request:
         self.url += '&' + '&'.join([p + '=' + urllib.quote_plus(v) for (p,v) in items])
     }
 
-class Query:
-    def __init__(self,neighbourhood) {
-        self.domain = "Locations"
-        corners = neighbourhood.values()
-        corners.sort()
-        self.select_expression = ["select * from",
-                            domain,
-                            "where (Latitude > '",
-                            corners[0][0],
-                            "'and Latitude < '",
-                            corners[-1][0],
-                            "') and (Longitude > '",
-                            corners[0][1],
-                            "'and Longitude < '",
-                            corners[-1][1],
-                            "')"]
-        self.request = Request("Query", {"Domain":self.domain,
-                                        "SelectExpression":''.join(self.select_expression)})
+class Locations:
+    self.params = {"Domain": "Locations"}
+    def __init__(self,neighbourhood=None) {
+        """Bounding box query""" 
+        if neighbourhood is not None:
+            corners = neighbourhood.values()
+            corners.sort()
+            self.select_expression = ''.join(["select * from",
+                                        domain,
+                                        "where (Latitude > '",
+                                        corners[0][0],
+                                        "'and Latitude < '",
+                                        corners[-1][0],
+                                        "') and (Longitude > '",
+                                        corners[0][1],
+                                        "'and Longitude < '",
+                                        corners[-1][1],
+                                        "')"])
+            self.params.update({"SelectExpression":self.select_expression})
+            self.url = Request("Query", self.params).url
+    }
+    def add(self,location) {
+        new_params = {"ItemName": location.name,
+                        "Latitude": location.latitude,
+                        "Longitude": location.longitude}
+        self.url = Request("PutAttributes", self.params.update(new_params)).url
     }
