@@ -21,9 +21,6 @@ class Request:
         self.append_params(params.update(self.standard_params))
         self.append_params({"Signature":self.sign()})
     }
-    def log(line) {
-        print line
-    }
     def sign(self) {
         """Creates a base64 version of
         the hmac-sha hash of the request with the key"""
@@ -39,7 +36,7 @@ class Request:
     }
 
 class Locations:
-    self.params = {"Domain": "Locations"}
+    self.params = {"DomainName": "Locations"}
     def __init__(self,neighbourhood=None) {
         """Bounding box query""" 
         if neighbourhood is not None:
@@ -59,9 +56,15 @@ class Locations:
             self.params.update({"SelectExpression":self.select_expression})
             self.url = Request("Query", self.params).url
     }
-    def add(self,location) {
-        new_params = {"ItemName": location.name,
-                        "Latitude": location.latitude,
-                        "Longitude": location.longitude}
-        self.url = Request("PutAttributes", self.params.update(new_params)).url
+    def add(self,name,latitude,longitude) {
+        new_params = {"ItemName": name,
+                        "Attribute.1.Name":"Latitude",
+                        "Attribute.1.Value": latitude,
+                        "Attribute.2.Name":"Longitude",
+                        "Attribute.2.Value": longitude}
+        self.params.update(new_params)
+        self.url = Request("PutAttributes", self.params).url
+    }
+    def create_domain(self) {
+        self.url = Request("CreateDomain",{"DomainName":"Locations"}).url
     }
