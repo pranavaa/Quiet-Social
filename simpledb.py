@@ -55,6 +55,11 @@ class Locations:
                                         "')"])
             self.params.update({"SelectExpression":self.select_expression})
             self.url = Request("Query", self.params).url
+            self.get_result()
+            if self.result is not None:
+                return self.get_locations()
+            else:
+                return self.error
     }
     def add(self,name,latitude,longitude) {
         new_params = {"ItemName": name,
@@ -64,7 +69,22 @@ class Locations:
                         "Attribute.2.Value": longitude}
         self.params.update(new_params)
         self.url = Request("PutAttributes", self.params).url
+        self.get_result()
+        if self.error is "NoSuchDomain":
+            self.create_domain()
+            self.add(name,latitude,longitude)
+        elif self.error is not None:
+            return self.error
+        else:
+            return "Success"
     }
     def create_domain(self) {
         self.url = Request("CreateDomain",{"DomainName":"Locations"}).url
+        self.get_result()
+    }
+    def get_result(self) {
+        try:
+            self.result = urllib2.urlopen(self.url)
+        except urllib2.URLError, e:
+            self.error = e
     }
